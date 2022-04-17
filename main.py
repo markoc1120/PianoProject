@@ -17,6 +17,9 @@ class MainWidget(RelativeLayout):
     H_LINES_SPACING = .15
     horizontal_lines = []
 
+    SPEED = .4
+    current_offset_y = 0
+
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)
         self.create_vertical_lines()
@@ -39,6 +42,11 @@ class MainWidget(RelativeLayout):
         x = (center_x - spacing_x/2) - spacing_x * index
         return x
 
+    def get_line_y_from_index(self, index):
+        spacing_y = self.H_LINES_SPACING * self.height
+        y = index * spacing_y - self.current_offset_y
+        return y
+
     def update_vertical_lines(self):
         start_index = int(- self.V_NB_LINES / 2)
 
@@ -48,11 +56,6 @@ class MainWidget(RelativeLayout):
             x1, y1 = self.transform(line_x, 0)
             x2, y2 = self.transform(line_x, self.height)
             self.vertical_lines[i].points = [x1, y1, x2, y2]
-
-    def get_line_y_from_index(self, index):
-        spacing_y = self.H_LINES_SPACING * self.height
-        y = index * spacing_y
-        return y
 
     def update_horizontal_lines(self):
         start_index = int(- self.V_NB_LINES / 2)
@@ -70,6 +73,13 @@ class MainWidget(RelativeLayout):
     def update(self, dt):
         self.update_vertical_lines()
         self.update_horizontal_lines()
+
+        spacing_y = self.H_LINES_SPACING * self.height
+        speed_y = self.SPEED * self.height / 100
+        self.current_offset_y += speed_y
+
+        while self.current_offset_y > spacing_y:
+            self.current_offset_y -= spacing_y
 
 
 class PianoApp(App):

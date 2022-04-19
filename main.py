@@ -1,6 +1,7 @@
 import random
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad
+from kivy.metrics import dp
 from kivy.properties import NumericProperty, Clock
 from kivy.uix.relativelayout import RelativeLayout
 
@@ -18,6 +19,9 @@ class MainWidget(RelativeLayout):
     H_LINES_SPACING = .1
     horizontal_lines = []
 
+    FLAT_L_PROP = 0.05
+    flat_line = None
+
     NB_TILES = 16
     tiles = []
     tiles_coordinates = []
@@ -33,6 +37,7 @@ class MainWidget(RelativeLayout):
         self.create_tiles()
         self.pre_fill_tiles()
         self.create_tiles_coordinates()
+        self.create_flat_line()
         Clock.schedule_interval(self.update, 1/60)
 
     def create_vertical_lines(self):
@@ -47,12 +52,28 @@ class MainWidget(RelativeLayout):
 
     def create_tiles(self):
         with self.canvas:
+            Color(1, 1, 1)
             for i in range(0, self.NB_TILES):
                 self.tiles.append(Quad())
 
     def pre_fill_tiles(self):
         for i in range(10):
             self.tiles_coordinates.append((0, i))
+
+    def create_flat_line(self):
+        with self.canvas:
+            Color(0, 0, 1)
+            self.flat_line = Line(width=dp(2))
+
+    def update_flat_line(self):
+        start_index = int(- self.V_NB_LINES / 2) + 1
+        end_index = start_index + self.V_NB_LINES - 1
+
+        y = int(self.FLAT_L_PROP * self.height)
+        x1, y1 = self.transform(self.get_line_x_from_index(start_index), y)
+        x2, y2 = self.transform(self.get_line_x_from_index(end_index), y)
+
+        self.flat_line.points = [x1, y1, x2, y2]
 
     def create_tiles_coordinates(self):
         last_y = 0
@@ -152,6 +173,7 @@ class MainWidget(RelativeLayout):
         self.update_horizontal_lines()
         print(len(self.tiles), len(self.tiles_coordinates))
         self.update_tiles()
+        self.update_flat_line()
 
         spacing_y = self.H_LINES_SPACING * self.height
         speed_y = self.SPEED * self.height / 100

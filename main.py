@@ -2,7 +2,7 @@ import random
 from kivy.app import App
 from kivy.graphics import Color, Line, Quad
 from kivy.metrics import dp
-from kivy.properties import NumericProperty, Clock
+from kivy.properties import NumericProperty, Clock, ListProperty
 from kivy.uix.relativelayout import RelativeLayout
 
 
@@ -19,7 +19,7 @@ class MainWidget(RelativeLayout):
     H_LINES_SPACING = .1
     horizontal_lines = []
 
-    FLAT_L_PROP = 0.05
+    FLAT_L_PROP = 0.1
     flat_line = None
 
     NB_TILES = 16
@@ -29,6 +29,8 @@ class MainWidget(RelativeLayout):
     SPEED = .4
     current_offset_y = 0
     current_y_loop = 0
+
+    tile_coordinate = None
 
     def __init__(self, **kwargs):
         super(MainWidget, self).__init__(**kwargs)
@@ -58,7 +60,7 @@ class MainWidget(RelativeLayout):
 
     def pre_fill_tiles(self):
         for i in range(10):
-            self.tiles_coordinates.append((0, i))
+            self.tiles_coordinates.append((0, i + 1))
 
     def create_flat_line(self):
         with self.canvas:
@@ -75,9 +77,17 @@ class MainWidget(RelativeLayout):
 
         self.flat_line.points = [x1, y1, x2, y2]
 
+    def check_flat_line_collision(self):
+        y = self.FLAT_L_PROP * self.height
+        for tile_coordinate in self.tiles_coordinates:
+            xmin, ymin = self.get_tile_coordinates(tile_coordinate[0] - 1, tile_coordinate[1] - 1)
+            if ymin < y:
+                del self.tiles_coordinates[self.tiles_coordinates.index(tile_coordinate)]
+
     def create_tiles_coordinates(self):
         last_y = 0
         last_x = 0
+        self.check_flat_line_collision()
         # clean the coordinates that are out of the screen
         for i in range(len(self.tiles_coordinates) - 1, -1, -1):
             if self.tiles_coordinates[i][1] < self.current_y_loop:
@@ -171,7 +181,6 @@ class MainWidget(RelativeLayout):
     def update(self, dt):
         self.update_vertical_lines()
         self.update_horizontal_lines()
-        print(len(self.tiles), len(self.tiles_coordinates))
         self.update_tiles()
         self.update_flat_line()
 
